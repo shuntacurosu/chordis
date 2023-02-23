@@ -1,5 +1,4 @@
 import pygame.midi
-import numpy as np
 import multiprocessing as mp
 
 from Logger import Logger

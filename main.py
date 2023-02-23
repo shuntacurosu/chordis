@@ -17,7 +17,7 @@ def setup(icon):
 def main():
     global icon
     title = "CHORDIS"
-    image = Image.open("favicon.ico")
+    image = Image.open("res\\favicon.ico")
     menu = Menu(MenuItem('閉じる', quit_app))
     icon = Icon(name=title, icon=image, title=title, menu=menu)
 
