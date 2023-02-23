@@ -127,6 +127,8 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
 /.vscode
 /examples
 /start.ps1
+test.py
