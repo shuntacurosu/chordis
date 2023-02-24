@@ -14,9 +14,8 @@ class Const:
     TONE_NUM = 12   # 12律
 
 class Midi:
-    def __init__(self, chord_queue:mp.Queue, conf_queue:mp.Queue, isFinish:mp.Value):
+    def __init__(self, chord_queue:mp.Queue, isFinish:mp.Value):
         self.chord_queue = chord_queue
-        self.conf_queue = conf_queue
         self.isFinish = isFinish
         self.notes = []
         self.old_chord = ""
@@ -30,13 +29,16 @@ class Midi:
 
         # midiデバイスの初期化
         pygame.midi.init()
-        midi_input = pygame.midi.Input(2)
-        
+
+        # 全てのmidi入力デバイスを選択
+        midi_inputs = []
+        for i in range(pygame.midi.get_count()):
+            if pygame.midi.get_device_info(i)[2]: # is InputDevice?
+                midi_inputs.append(pygame.midi.Input(i))
         try:
             while(not self.isFinish.value):
-                self.__updateChord(midi_input)
+                [self.__updateChord(midi_input) for midi_input in midi_inputs]
                 self.__putChord()
-                self.__updateConfig()
                 pygame.time.wait(10)
         except KeyboardInterrupt:
                 pass
@@ -48,12 +50,6 @@ class Midi:
         プロセス終了時に実行する関数
         """
         self.isFinish.value = 1
-
-    def __updateConfig(self):
-        """
-        パラメータを更新します。
-        """
-        pass
         
     def __putChord(self):
         """
@@ -90,7 +86,8 @@ class Midi:
                     self.notes.append(note)
                     self.notes = sorted(self.notes)
             case Const.NOTE_OFF:
-                self.notes.remove(note)
+                if note in self.notes:
+                    self.notes.remove(note)
 
     def __midi_to_ansi_note(self, midi_note):
         """

@@ -2,7 +2,6 @@ import multiprocessing as mp
 
 from GUI import GUI
 from Midi import Midi
-from ConfigGUI import ConfigGUI
 from Logger import Logger
 logger = Logger(__name__, Logger.DEBUG)
 
@@ -11,8 +10,6 @@ class Application:
     isFinish = mp.Value('B', 0)
     isSelectConfig = mp.Value('B', 0)
     chord_queue = mp.Queue()
-    gui_conf_queue = mp.Queue()
-    midi_conf_queue = mp.Queue()
 
     def start(self):
         """
@@ -20,15 +17,11 @@ class Application:
         """
         logger.debug("プロセスを起動しました")
 
-        
-
-        gui = GUI(self.chord_queue, self.gui_conf_queue, self.isFinish)
-        midi = Midi(self.chord_queue, self.midi_conf_queue, self.isFinish)
-        config_gui = ConfigGUI(self.isFinish, self.isSelectConfig, self.gui_conf_queue, self.midi_conf_queue)
+        gui = GUI(self.chord_queue, self.isFinish)
+        midi = Midi(self.chord_queue, self.isFinish)
         self.ps = [
             mp.Process(target=gui.start),
             mp.Process(target=midi.start),
-            mp.Process(target=config_gui.start),
         ]
 
         try:
@@ -48,12 +41,6 @@ class Application:
         起動しているスレッドを終了する。
         """
         self.isFinish.value = 1
-
-    def config(self):
-        """
-        設定画面を表示する
-        """
-        self.isSelectConfig.value = 1
 
 if __name__ == "__main__":
     Application().start()

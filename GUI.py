@@ -12,9 +12,8 @@ class GUI():
     GUI表示用プロセス。
     実際のGUIはインナークラス__GUIで定義。
     """
-    def __init__(self, chord_queue: mp.Queue, conf_queue:mp.Queue, isFinish:mp.Value):
+    def __init__(self, chord_queue: mp.Queue, isFinish:mp.Value):
         self.chord_queue = chord_queue
-        self.conf_queue = conf_queue
         self.isFinish = isFinish
 
     def start(self):
@@ -22,7 +21,7 @@ class GUI():
         プロセスのエントリポイント
         """
         logger.debug("プロセスを起動しました")
-        gui = self.__GUI(self.chord_queue, self.conf_queue, self.isFinish)
+        gui = self.__GUI(self.chord_queue, self.isFinish)
         gui.after(20, gui.update)
         gui.mainloop()
         logger.debug("正常にプロセスを終了しました。")
@@ -31,7 +30,7 @@ class GUI():
         """
         GUI本体
         """
-        def __init__(self, chord_queue:mp.Queue, conf_queue:mp.Queue, isFinish:mp.Value):
+        def __init__(self, chord_queue:mp.Queue, isFinish:mp.Value):
             super().__init__()
 
             # パラメータ
@@ -44,7 +43,6 @@ class GUI():
 
             self.chord_queue = chord_queue
             self.isFinish = isFinish
-            self.conf_queue = conf_queue
             self.geometry(f"350x80+{x}+{y}")
             self.config(bg="snow")
             self.attributes("-transparentcolor", "snow", '-alpha', alpha, "-topmost", True)
@@ -67,9 +65,6 @@ class GUI():
                 self.destroy()
                 return
 
-            # パラメータ更新
-            self.__updateConfig()
-
             # コード更新
             try:
                 chord = self.chord_queue.get_nowait()
@@ -77,12 +72,6 @@ class GUI():
             except Empty:
                 pass
             self.after(20, self.update)
-
-        def __updateConfig(self):
-            """
-            パラメータを更新します。
-            """
-            pass
 
 if __name__ == "__main__":
     import multiprocessing as mp
