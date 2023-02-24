@@ -18,7 +18,10 @@ def main():
     global icon
     title = "CHORDIS"
     image = Image.open("res\\favicon.ico")
-    menu = Menu(MenuItem('閉じる', quit_app))
+    menu = Menu(
+            MenuItem('config', config_app),
+            MenuItem('quit', quit_app),
+            )
     icon = Icon(name=title, icon=image, title=title, menu=menu)
 
     global app
@@ -30,6 +33,9 @@ def main():
 def quit_app():
     app.stop()
     icon.stop()
+
+def config_app():
+    app.config()
 
 if __name__ == "__main__":
     main()

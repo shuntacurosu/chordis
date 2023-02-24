@@ -1,3 +1,4 @@
+import os
 import pygame.midi
 import multiprocessing as mp
 
@@ -13,8 +14,9 @@ class Const:
     TONE_NUM = 12   # 12律
 
 class Midi:
-    def __init__(self, queue:mp.Queue, isFinish:mp.Value):
-        self.queue = queue
+    def __init__(self, chord_queue:mp.Queue, conf_queue:mp.Queue, isFinish:mp.Value):
+        self.chord_queue = chord_queue
+        self.conf_queue = conf_queue
         self.isFinish = isFinish
         self.notes = []
         self.old_chord = ""
@@ -24,6 +26,8 @@ class Midi:
         """
         プロセスのエントリポイント
         """
+        logger.debug("プロセスを起動しました")
+
         # midiデバイスの初期化
         pygame.midi.init()
         midi_input = pygame.midi.Input(2)
@@ -32,6 +36,7 @@ class Midi:
             while(not self.isFinish.value):
                 self.__updateChord(midi_input)
                 self.__putChord()
+                self.__updateConfig()
                 pygame.time.wait(10)
         except KeyboardInterrupt:
                 pass
@@ -44,12 +49,18 @@ class Midi:
         """
         self.isFinish.value = 1
 
+    def __updateConfig(self):
+        """
+        パラメータを更新します。
+        """
+        pass
+        
     def __putChord(self):
         """
         コードをキューにエンキューします。
         """
         if self.old_chord != self.chord:
-            self.queue.put(self.chord)
+            self.chord_queue.put(self.chord)
             self.old_chord = self.chord
             logger.debug(f"Chord: {self.chord}")
 

@@ -13,6 +13,7 @@ MIDIキーボードから入力された和音をディスプレイ左上に表�
 $ python --version
 Python 3.10.10
 
+$ pip install -U pip
 $ pip install -r requirements.txt
 ```
 
