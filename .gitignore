@@ -132,3 +132,7 @@ dmypy.json
 /examples
 /start.ps1
 test.py
+main.build
+main.dist
+main.onefile-build
+main.exe

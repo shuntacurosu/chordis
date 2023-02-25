@@ -43,7 +43,7 @@ class GUI():
 
             self.chord_queue = chord_queue
             self.isFinish = isFinish
-            self.geometry(f"350x80+{x}+{y}")
+            self.geometry(f"500x80+{x}+{y}")
             self.config(bg="snow")
             self.attributes("-transparentcolor", "snow", '-alpha', alpha, "-topmost", True)
             self.wm_overrideredirect(True)
@@ -77,6 +77,6 @@ if __name__ == "__main__":
     import multiprocessing as mp
     queue = mp.Queue()
     isFinish = mp.Value('B', 0)
-    queue.put("G#sus4/C#")
+    queue.put("G#aug7(b9)/F#")
     gui = GUI(queue, isFinish)
     gui.start()

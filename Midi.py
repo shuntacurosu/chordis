@@ -1,4 +1,3 @@
-import os
 import pygame.midi
 import multiprocessing as mp
 
@@ -139,17 +138,18 @@ class Midi:
                 case (4, 3, 3): new_chord = new_note+"7"
                 case (3, 4, 3): new_chord = new_note+"m7"
                 case (3, 4, 4): new_chord = new_note+"m(M7)"
-                case (4, 4, 3): new_chord = new_note+"aug7"
-                case (3, 3, 4): new_chord = new_note+"dim7"
+                case (3, 3, 4): new_chord = new_note+"m7b5"
+                case (4, 4, 3): new_chord = new_note+"augM7"
+                case (4, 4, 2): new_chord = new_note+"aug7"
+                case (3, 3, 3): new_chord = new_note+"dim7"
                 case (2, 2, 3): new_chord = new_note+"add9"
                 # ナインス
-                case (4, 3, 4, 3): new_chord = new_note+"M9"
-                case (4, 3, 3, 4): new_chord = new_note+"9"
-                case (3, 4, 3, 4): new_chord = new_note+"m9"
-                case (3, 4, 4, 3): new_chord = new_note+"m(M9)"
-                case (4, 4, 3, 3): new_chord = new_note+"aug9"
-                case (3, 3, 4, 4): new_chord = new_note+"dim(M9)"
-                case (3, 3, 4, 3): new_chord = new_note+"dim9"
+                case (2, 2, 3, 4): new_chord = new_note+"M9"
+                case (2, 2, 3, 3): new_chord = new_note+"9"
+                case (2, 1, 4, 3): new_chord = new_note+"m9"
+                case (2, 1, 4, 4): new_chord = new_note+"m(M9)"
+                case (2, 2, 4, 2): new_chord = new_note+"aug9"
+                case (1, 3, 4, 2): new_chord = new_note+"aug7(b9)"
             if new_chord != None:
                 break
         # 判定有の場合コードを更新。判定無の場合空文字で更新。
