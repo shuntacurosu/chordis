@@ -6,18 +6,13 @@ MIDIキーボードから入力された和音をディスプレイ左上に表�
 ![demo](res/demo.gif)
 
 ## 使い方
-ローカルPCにPython実行環境を構築し、main.pyを実行します。
+最新バージョンをインストールし、chordis.batを実行します。
 
-### 1. インストール
+## 開発
 ```
 $ python --version
 Python 3.10.10
 
 $ pip install -U pip
 $ pip install -r requirements.txt
-```
-
-### 2. 実行
-```
-$ pythonw.exe main.py
 ```
