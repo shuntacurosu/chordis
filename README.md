@@ -6,7 +6,9 @@ MIDIキーボードから入力された和音をディスプレイ左上に表�
 ![demo](res/demo.gif)
 
 ## 使い方
-最新バージョンをインストールし、chordis.batを実行します。
+- Install: [ここ](https://github.com/shuntacurosu/chordis/releases)から最新バージョンをダウンロードします。
+- START: chordis.batを実行します。
+- STOP: タスクトレイアイコンを右クリックし「quit」を押します。
 
 ## 開発
 ```
