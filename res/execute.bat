@@ -1,1 +1,2 @@
-start .\pythonw.exe main.py
+cd env
+start .\pythonw.exe .\main.py
