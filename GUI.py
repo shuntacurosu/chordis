@@ -4,6 +4,7 @@ from tkinter import ttk
 from tkinter.font import Font
 import multiprocessing as mp
 
+from Model import Model
 from Logger import Logger
 logger = Logger(__name__, Logger.DEBUG)
 
@@ -12,16 +13,15 @@ class GUI():
     GUI表示用プロセス。
     実際のGUIはインナークラス__GUIで定義。
     """
-    def __init__(self, chord_queue: mp.Queue, isFinish:mp.Value):
-        self.chord_queue = chord_queue
-        self.isFinish = isFinish
-
+    def __init__(self, model:Model):
+        self.model = model
+        
     def start(self):
         """
         プロセスのエントリポイント
         """
         logger.debug("プロセスを起動しました")
-        gui = self.__GUI(self.chord_queue, self.isFinish)
+        gui = self.__GUI(self.model)
         gui.after(20, gui.update)
         gui.mainloop()
         logger.debug("正常にプロセスを終了しました。")
@@ -30,7 +30,7 @@ class GUI():
         """
         GUI本体
         """
-        def __init__(self, chord_queue:mp.Queue, isFinish:mp.Value):
+        def __init__(self, model:Model):
             super().__init__()
 
             # パラメータ
@@ -41,8 +41,7 @@ class GUI():
             y = 0
             font_size = 45
 
-            self.chord_queue = chord_queue
-            self.isFinish = isFinish
+            self.model = model
             self.geometry(f"500x80+{x}+{y}")
             self.config(bg="snow")
             self.attributes("-transparentcolor", "snow", '-alpha', alpha, "-topmost", True)
@@ -61,22 +60,20 @@ class GUI():
         
         def update(self):
             # 終了判定
-            if self.isFinish.value:
+            if self.model.isFinish:
                 self.destroy()
                 return
 
             # コード更新
             try:
-                chord = self.chord_queue.get_nowait()
+                chord = self.model.chord_queue.get_nowait()
                 self.label1_str.set(chord)
             except Empty:
                 pass
             self.after(20, self.update)
 
 if __name__ == "__main__":
-    import multiprocessing as mp
-    queue = mp.Queue()
-    isFinish = mp.Value('B', 0)
-    queue.put("G#aug7(b9)/F#")
-    gui = GUI(queue, isFinish)
+    model = Model()
+    model.chord_queue.put("G#aug7(b9)/F#")
+    gui = GUI(model)
     gui.start()

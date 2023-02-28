@@ -3,13 +3,12 @@ import multiprocessing as mp
 from GUI import GUI
 from Midi import Midi
 from Logger import Logger
+from Model import Model
 logger = Logger(__name__, Logger.DEBUG)
 
 class Application:
     ps = []
-    isFinish = mp.Value('B', 0)
-    isSelectConfig = mp.Value('B', 0)
-    chord_queue = mp.Queue()
+    model = Model()
 
     def start(self):
         """
@@ -17,8 +16,8 @@ class Application:
         """
         logger.debug("プロセスを起動しました")
 
-        gui = GUI(self.chord_queue, self.isFinish)
-        midi = Midi(self.chord_queue, self.isFinish)
+        gui = GUI(self.model)
+        midi = Midi(self.model)
         self.ps = [
             mp.Process(target=gui.start),
             mp.Process(target=midi.start),
@@ -40,7 +39,7 @@ class Application:
         """
         起動しているスレッドを終了する。
         """
-        self.isFinish.value = 1
+        self.model.isFinish = 1
 
 if __name__ == "__main__":
     Application().start()

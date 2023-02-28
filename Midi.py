@@ -1,6 +1,6 @@
 import pygame.midi
-import multiprocessing as mp
 
+from Model import Model
 from Logger import Logger
 logger = Logger(__name__, Logger.DEBUG)
 
@@ -13,9 +13,8 @@ class Const:
     TONE_NUM = 12   # 12律
 
 class Midi:
-    def __init__(self, chord_queue:mp.Queue, isFinish:mp.Value):
-        self.chord_queue = chord_queue
-        self.isFinish = isFinish
+    def __init__(self, model:Model):
+        self.model = model
         self.notes = []
         self.old_chord = ""
         self.chord = ""
@@ -35,7 +34,7 @@ class Midi:
             if pygame.midi.get_device_info(i)[2]: # is InputDevice?
                 midi_inputs.append(pygame.midi.Input(i))
         try:
-            while(not self.isFinish.value):
+            while(not self.model.isFinish):
                 [self.__updateChord(midi_input) for midi_input in midi_inputs]
                 self.__putChord()
                 pygame.time.wait(10)
@@ -48,14 +47,14 @@ class Midi:
         """
         プロセス終了時に実行する関数
         """
-        self.isFinish.value = 1
+        self.model.isFinish = 1
         
     def __putChord(self):
         """
         コードをキューにエンキューします。
         """
         if self.old_chord != self.chord:
-            self.chord_queue.put(self.chord)
+            self.model.chord_queue.put(self.chord)
             self.old_chord = self.chord
             logger.debug(f"Chord: {self.chord}")
 
@@ -164,7 +163,6 @@ class Midi:
                 self.chord = new_chord + "/" + root
 
 if __name__ == "__main__":
-    queue = mp.Queue()
-    isFinish = mp.Value('B', 0)
-    midi = Midi(queue, isFinish)
+    model = Model
+    midi = Midi(model)
     midi.start()
