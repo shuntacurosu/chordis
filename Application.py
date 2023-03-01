@@ -1,5 +1,6 @@
 import multiprocessing as mp
 
+from ConfigGUI import ConfigGUI
 from GUI import GUI
 from Midi import Midi
 from Logger import Logger
@@ -18,9 +19,11 @@ class Application:
 
         gui = GUI(self.model)
         midi = Midi(self.model)
+        config = ConfigGUI(self.model)
         self.ps = [
             mp.Process(target=gui.start),
             mp.Process(target=midi.start),
+            mp.Process(target=config.start),
         ]
 
         try:
@@ -41,5 +44,11 @@ class Application:
         """
         self.model.isFinish = 1
 
+    def config(self):
+        """
+        設定画面を開く
+        """
+        self.model.isSelectConfig = 1
+        
 if __name__ == "__main__":
     Application().start()
