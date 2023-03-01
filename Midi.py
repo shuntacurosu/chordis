@@ -1,3 +1,4 @@
+from queue import Empty
 import pygame.midi
 
 from Model import Model
@@ -19,6 +20,9 @@ class Midi:
         self.old_chord = ""
         self.chord = ""
         
+        # MIDI入力デバイスID
+        self.midi_input_id = None
+
     def start(self):
         """
         プロセスのエントリポイント
@@ -29,13 +33,26 @@ class Midi:
         pygame.midi.init()
 
         # 全てのmidi入力デバイスを選択
-        midi_inputs = []
+        midi_inputs = {}
         for i in range(pygame.midi.get_count()):
-            if pygame.midi.get_device_info(i)[2]: # is InputDevice?
-                midi_inputs.append(pygame.midi.Input(i))
+            device_info = pygame.midi.get_device_info(i)
+            if device_info[2]: # is InputDevice?
+                midi_inputs[device_info[1]] = i
+        
+        # 先頭の入力デバイスを初期値として設定
+        self.midi_input_id = list(midi_inputs.values())[0]
+        midi_input = pygame.midi.Input(self.midi_input_id)
+
+        # ConfigGUIにmidi入力デバイスリストを送信
+        self.model.midi_input_HW_list.put(midi_inputs)
+        logger.debug(f"send hw_input_list(key): { midi_inputs.keys()}")
+        logger.debug(f"send hw_input_list(val): { midi_inputs.values()}")
+
+        # ループ内でコード判定、終了判定、MIDI機器設定変更を行う
         try:
             while(not self.model.isFinish):
-                [self.__updateChord(midi_input) for midi_input in midi_inputs]
+                midi_input = self.__updateMidiInput(midi_input)
+                self.__updateChord(midi_input)
                 self.__putChord()
                 pygame.time.wait(10)
         except KeyboardInterrupt:
@@ -48,7 +65,27 @@ class Midi:
         プロセス終了時に実行する関数
         """
         self.model.isFinish = 1
-        
+
+    def __updateMidiInput(self, midi_input):
+        """
+        GUIで選択されたMIDI機器のIDを取得(ノンブロッキング)
+        """
+        try:
+            new_midi_input_id = self.model.midi_input_HW_selected.get_nowait()
+
+            # 新しいIDが選択されたら設定を更新する
+            if self.midi_input_id != new_midi_input_id:
+                pygame.midi.Input.close(midi_input)
+                pygame.midi.quit()
+                pygame.midi.init()
+                midi_input = pygame.midi.Input(new_midi_input_id)
+                self.midi_input_id = new_midi_input_id
+                logger.debug(f"set input_midi_device_id: {self.midi_input_id}")
+        except Empty:
+            pass
+
+        return midi_input
+    
     def __putChord(self):
         """
         コードをキューにエンキューします。
@@ -163,6 +200,7 @@ class Midi:
                 self.chord = new_chord + "/" + root
 
 if __name__ == "__main__":
-    model = Model
+    model = Model()
     midi = Midi(model)
+    model.midi_input_HW_selected.put(2)
     midi.start()

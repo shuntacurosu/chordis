@@ -14,11 +14,15 @@ def setup(icon):
     app.start()
     quit_app()
 
+def config_app():
+    app.config()
+
 def main():
     global icon
     title = "CHORDIS"
     image = Image.open("res\\favicon.ico")
     menu = Menu(
+            MenuItem('config', config_app),
             MenuItem('quit', quit_app),
             )
     icon = Icon(name=title, icon=image, title=title, menu=menu)

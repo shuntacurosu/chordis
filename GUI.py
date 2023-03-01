@@ -2,7 +2,6 @@ from queue import Empty
 import tkinter as tk
 from tkinter import ttk
 from tkinter.font import Font
-import multiprocessing as mp
 
 from Model import Model
 from Logger import Logger

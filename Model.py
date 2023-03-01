@@ -9,7 +9,9 @@ class Model:
         self._isSelectConfig = mp.Value('B', 0)
         self._window_size= mp.Array('I', [0, 0])
         self.chord_queue = mp.Queue()
-
+        self.midi_input_HW_list = mp.Queue()
+        self.midi_input_HW_selected = mp.Queue()
+        
     # getter
     @property
     def isFinish(self):
