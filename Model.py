@@ -7,7 +7,7 @@ class Model:
     def __init__(self) -> None:
         self._isFinish = mp.Value('B', 0)
         self._isSelectConfig = mp.Value('B', 0)
-        self._window_size= mp.Array('I', [0, 0])
+        self._window_size= mp.Value('f', 0)
         self.chord_queue = mp.Queue()
         self.midi_input_HW_list = mp.Queue()
         self.midi_input_HW_selected = mp.Queue()
@@ -23,7 +23,7 @@ class Model:
 
     @property
     def window_size(self):
-        return self._window_size[:]
+        return self._window_size.value
     
     # setter
     @isFinish.setter

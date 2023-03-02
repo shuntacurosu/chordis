@@ -51,12 +51,23 @@ class ConfigGUI():
             frame_1 = customtkinter.CTkFrame(master=self)
             frame_1.pack(pady=20, padx=30, fill="both", expand=True)
 
+            # MIDI入力機器
             label_1 = customtkinter.CTkLabel(master=frame_1, justify=customtkinter.LEFT, text="MIDI Input HW:")
             label_1.pack(pady=10, padx=10)
 
             self.optionmenu_1 = customtkinter.CTkOptionMenu(frame_1, values=list(self.hw_input_list.keys()), command=self.callback_updateHW)
-            self.optionmenu_1.pack(pady=10, padx=10)
+            self.optionmenu_1.pack(pady=0, padx=10)
 
+            label_2 = customtkinter.CTkLabel(master=frame_1, justify=customtkinter.LEFT, text="Font Size:")
+            label_2.pack(pady=10, padx=10)
+
+            slider_1 = customtkinter.CTkSlider(master=frame_1, command=self.slider_callback, from_=0, to=1)
+            slider_1.pack(pady=0, padx=10)
+            slider_1.set(0)
+
+        def slider_callback(self, value):
+            self.model.window_size = value
+            
         def callback_updateHW(self, choice):
             """
             オプションメニューのcallback。

@@ -1,3 +1,4 @@
+import math
 from queue import Empty
 import tkinter as tk
 from tkinter import ttk
@@ -32,24 +33,28 @@ class GUI():
         def __init__(self, model:Model):
             super().__init__()
 
+            # 初期値
+            self.init_w = 500
+            self.init_h = 80
+
             # パラメータ
+            self.now_window_size = 0
             bg = "snow"
             fg = "green"
             alpha = 0.8
-            x = 5
+            x = 0
             y = 0
-            font_size = 45
 
             self.model = model
-            self.geometry(f"500x80+{x}+{y}")
+            self.geometry(f"{self.init_w}x{self.init_h}+{x}+{y}")
             self.config(bg="snow")
             self.attributes("-transparentcolor", "snow", '-alpha', alpha, "-topmost", True)
             self.wm_overrideredirect(True)
 
-            font1 = Font(family='Arial', size=font_size, weight='bold')
+            font = Font(family='Arial', size=self.font_size(self.init_w, self.init_h), weight='bold')
             self.label1_str = tk.StringVar(self)
-            self.label1 = ttk.Label(self, textvariable=self.label1_str, font=font1, foreground=fg, background=bg)  #文字ラベル設定
-            self.label1.pack(side="left")
+            self.label1 = ttk.Label(self, textvariable=self.label1_str, font=font, foreground=fg, background=bg)  #文字ラベル設定
+            self.label1.grid(row=0, column=0, sticky="nsew")
 
         def mainloop(self, n: int = 0):
             try:
@@ -69,8 +74,23 @@ class GUI():
                 self.label1_str.set(chord)
             except Empty:
                 pass
+
+            # フォントサイズ更新
+            if self.now_window_size != self.model.window_size:
+                self.now_window_size = self.model.window_size
+                self.resize()
+
             self.after(20, self.update)
 
+        def resize(self):
+            w = int(self.init_w + self.init_w*self.now_window_size)
+            h = int(self.init_h + self.init_h*self.now_window_size)
+            self.geometry(f"{w}x{h}")
+            self.label1.configure(font=("Arial", self.font_size(w,h), "bold"))
+
+        def font_size(self, w, h):
+            return int(math.sqrt(w**2+h**2) * 0.1)
+        
 if __name__ == "__main__":
     model = Model()
     model.chord_queue.put("G#aug7(b9)/F#")
