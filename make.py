@@ -74,6 +74,11 @@ def make():
         cmd = f"rmdir /s .git"
         exec(cmd, folder_env)
 
+    # zipファイル作成
+    cmd = f"call powershell Compress-Archive -Path {folder_root} -DestinationPath {folder_root}.zip -Force"
+    exec(cmd)
+
+
 def exec_copy_tkinter_lib():
     """
     tkinterライブラリをコピーする
