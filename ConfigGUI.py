@@ -100,7 +100,7 @@ class ConfigGUI():
             # 「設定」押下時
             if self.model.isSelectConfig:
                 # 非表示中であれば表示する
-                if self.state() != 'normal':
+                if (self.state() != 'normal') and (self.state() != 'iconic'):
                     self.deiconify()
                 self.focus_set()
 
@@ -109,6 +109,7 @@ class ConfigGUI():
 if __name__ == "__main__":
     model = Model()
     model.midi_input_HW_list.put({"test InputHW":0, "YAMAHA XXXX":1})
+    model.isSelectConfig = 1
 
     config_gui = ConfigGUI(model)
     config_gui.start()
