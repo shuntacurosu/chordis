@@ -36,7 +36,6 @@ class GUI():
             # 初期値
             self.init_w = 500
             self.init_h = 80
-            self.now_window_size = 0
             bg = "snow"
             fg = "green"
             alpha = 0.8
@@ -74,9 +73,14 @@ class GUI():
                 pass
 
             # フォントサイズ更新
-            if self.now_window_size != self.model.window_size:
-                self.now_window_size = self.model.window_size
-                self.resize()
+            try:
+                font_scale = self.model.font_scale.get_nowait()
+                resized_w = int(self.init_w + self.init_w*font_scale)
+                resized_h = int(self.init_h + self.init_h*font_scale)
+                self.geometry(f"{resized_w}x{resized_h}")
+                self.label1.configure(font=("Arial", self.font_size(resized_w,resized_h), "bold"))
+            except Empty:
+                pass
 
             # フォントカラー更新
             try:
@@ -94,13 +98,10 @@ class GUI():
 
             self.after(20, self.update)
 
-        def resize(self):
-            w = int(self.init_w + self.init_w*self.now_window_size)
-            h = int(self.init_h + self.init_h*self.now_window_size)
-            self.geometry(f"{w}x{h}")
-            self.label1.configure(font=("Arial", self.font_size(w,h), "bold"))
-
         def font_size(self, w, h):
+            """
+            フォントサイズの計算
+            """
             return int(math.sqrt(w**2+h**2) * 0.1)
         
 if __name__ == "__main__":

@@ -1,3 +1,4 @@
+from queue import Empty
 import customtkinter
 
 from Logger import Logger
@@ -49,11 +50,11 @@ class ConfigGUI():
             optmenu_midi_HW = customtkinter.CTkOptionMenu(frame, values=self.hw_input_list, command=self.callback_midiHW)
             optmenu_midi_HW.pack(pady=0, padx=10)
 
-            # フォントサイズ
+            # フォントスケール(便宜上フォントサイズと表記)
             label_fontsize = customtkinter.CTkLabel(master=frame, justify=customtkinter.LEFT, text="Font Size:")
             label_fontsize.pack(pady=10, padx=10)
 
-            slider_fontsize = customtkinter.CTkSlider(master=frame, command=self.callback_fontsize, from_=0, to=1)
+            slider_fontsize = customtkinter.CTkSlider(master=frame, command=self.callback_fontscale, from_=0, to=1)
             slider_fontsize.pack(pady=0, padx=10)
             slider_fontsize.set(0)
 
@@ -73,8 +74,8 @@ class ConfigGUI():
             slider_fontopacity.pack(pady=0, padx=10)
             slider_fontopacity.set(0.8)
 
-        def callback_fontsize(self, value):
-            self.model.window_size = value
+        def callback_fontscale(self, value):
+            self.model.font_scale.put(value)
 
         def callback_fontcolor(self, value):
             self.model.font_color.put(value)
@@ -100,7 +101,6 @@ class ConfigGUI():
             """
             logger.debug("閉じるボタンが押されました")
             self.withdraw()
-            self.model.isSelectConfig=0
 
         def update(self):
             """
@@ -111,19 +111,23 @@ class ConfigGUI():
                 self.destroy()
                 return
             
-            # 「設定」押下時
-            if self.model.isSelectConfig:
-                # 非表示中であれば表示する
-                if (self.state() != 'normal') and (self.state() != 'iconic'):
-                    self.deiconify()
-                self.focus_set()
+            try:
+                # 「設定」押下時 
+                if self.model.selectConfig.get_nowait():
+                    # 非表示中であれば表示する
+                    if (self.state() != 'normal') and (self.state() != 'iconic'):
+                        self.deiconify()
+                    self.attributes("-topmost", True)
+                    self.attributes("-topmost", False)
+            except Empty:
+                    pass
 
             self.after(20, self.update)
 
 if __name__ == "__main__":
     model = Model()
     model.midi_input_HW_list.put(["test InputHW","YAMAHA XXXX"])
-    model.isSelectConfig = 1
+    model.selectConfig.put(True)
 
     config_gui = ConfigGUI(model)
     config_gui.start()

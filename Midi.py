@@ -44,7 +44,7 @@ class Midi:
 
         # ConfigGUIにmidi入力デバイスリストを送信
         self.model.midi_input_HW_list.put(list(self.hw_input_list.keys()))
-        logger.debug(f"send hw_input_list(key): {self.hw_input_list.keys()}")
+        logger.debug(f"send hw_input_list(key): list(self.hw_input_list.keys())")
 
         # ループ内でコード判定、終了判定、MIDI機器設定変更を行う
         try:
