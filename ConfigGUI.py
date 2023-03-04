@@ -1,4 +1,3 @@
-import multiprocessing as mp
 import customtkinter
 
 from Logger import Logger
@@ -32,55 +31,59 @@ class ConfigGUI():
             super().__init__()
             self.model = model
 
-            # パラメータ
-            self.hw_input_list = None
-            self.hw_input_id = None
-
             # MidiからMIDI機器一覧を受け取る(ブロッキング)
             self.hw_input_list = self.model.midi_input_HW_list.get()
-            logger.debug(f"recv hw_input_list(key): { self.hw_input_list.keys()}")
-            logger.debug(f"recv hw_input_list(val): { self.hw_input_list.values()}")
-
-            # ID=0の機器を初期設定とする
-            self.hw_input_id = 0
+            logger.debug(f"recv hw_input_list: { self.hw_input_list}")
 
             # configure window
             self.title("CHORDIS 設定")
-            self.geometry(f"{400}x{300}")
+            self.geometry(f"{400}x{400}")
 
-            frame_1 = customtkinter.CTkFrame(master=self)
-            frame_1.pack(pady=20, padx=30, fill="both", expand=True)
+            frame = customtkinter.CTkFrame(master=self)
+            frame.pack(pady=20, padx=30, fill="both", expand=True)
 
             # MIDI入力機器
-            label_1 = customtkinter.CTkLabel(master=frame_1, justify=customtkinter.LEFT, text="MIDI Input HW:")
-            label_1.pack(pady=10, padx=10)
+            label_midi_HW = customtkinter.CTkLabel(master=frame, justify=customtkinter.LEFT, text="MIDI Input HW:")
+            label_midi_HW.pack(pady=10, padx=10)
 
-            self.optionmenu_1 = customtkinter.CTkOptionMenu(frame_1, values=list(self.hw_input_list.keys()), command=self.callback_updateHW)
-            self.optionmenu_1.pack(pady=0, padx=10)
+            optmenu_midi_HW = customtkinter.CTkOptionMenu(frame, values=self.hw_input_list, command=self.callback_midiHW)
+            optmenu_midi_HW.pack(pady=0, padx=10)
 
-            label_2 = customtkinter.CTkLabel(master=frame_1, justify=customtkinter.LEFT, text="Font Size:")
-            label_2.pack(pady=10, padx=10)
+            # フォントサイズ
+            label_fontsize = customtkinter.CTkLabel(master=frame, justify=customtkinter.LEFT, text="Font Size:")
+            label_fontsize.pack(pady=10, padx=10)
 
-            slider_1 = customtkinter.CTkSlider(master=frame_1, command=self.slider_callback, from_=0, to=1)
-            slider_1.pack(pady=0, padx=10)
-            slider_1.set(0)
+            slider_fontsize = customtkinter.CTkSlider(master=frame, command=self.callback_fontsize, from_=0, to=1)
+            slider_fontsize.pack(pady=0, padx=10)
+            slider_fontsize.set(0)
 
-        def slider_callback(self, value):
+            # フォントカラー
+            label_fontcolor = customtkinter.CTkLabel(master=frame, justify=customtkinter.LEFT, text="Font Color:")
+            label_fontcolor.pack(pady=10, padx=10)
+
+            color_list = ["green", "red", "yellow", "blue", "cyan", "magenta", "white", "black"]
+            slider_fontcolor = customtkinter.CTkOptionMenu(frame, values=color_list, command=self.callback_fontcolor)
+            slider_fontcolor.pack(pady=0, padx=10)
+
+            # フォント不透明度
+            label_fontopacity = customtkinter.CTkLabel(master=frame, justify=customtkinter.LEFT, text="Font Opacity:")
+            label_fontopacity.pack(pady=10, padx=10)
+
+            slider_fontopacity = customtkinter.CTkSlider(master=frame, command=self.callback_fontopaticy, from_=0, to=1)
+            slider_fontopacity.pack(pady=0, padx=10)
+            slider_fontopacity.set(0.8)
+
+        def callback_fontsize(self, value):
             self.model.window_size = value
-            
-        def callback_updateHW(self, choice):
-            """
-            オプションメニューのcallback。
-            設定値が更新されていればMIDI機器のIDをMidiに送信する
-            """
-            new_hw_input_id = self.hw_input_list[choice]
-            logger.debug(f"select hw_input: {str(choice)}")
 
-            if self.hw_input_id != new_hw_input_id:
-                self.hw_input_id = new_hw_input_id
-                self.model.midi_input_HW_selected.put(self.hw_input_id)
-                logger.debug(f"send hw_input_id: {self.hw_input_id}")
+        def callback_fontcolor(self, value):
+            self.model.font_color.put(value)
 
+        def callback_fontopaticy(self, value):
+            self.model.font_opatity.put(value)
+
+        def callback_midiHW(self, value):
+            self.model.midi_input_HW_selected.put(value)
 
         def mainloop(self, n: int = 0):
             """
@@ -119,7 +122,7 @@ class ConfigGUI():
 
 if __name__ == "__main__":
     model = Model()
-    model.midi_input_HW_list.put({"test InputHW":0, "YAMAHA XXXX":1})
+    model.midi_input_HW_list.put(["test InputHW","YAMAHA XXXX"])
     model.isSelectConfig = 1
 
     config_gui = ConfigGUI(model)

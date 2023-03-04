@@ -8,10 +8,12 @@ class Model:
         self._isFinish = mp.Value('B', 0)
         self._isSelectConfig = mp.Value('B', 0)
         self._window_size= mp.Value('f', 0)
+        self.font_color= mp.Queue()
+        self.font_opatity= mp.Queue()
         self.chord_queue = mp.Queue()
         self.midi_input_HW_list = mp.Queue()
         self.midi_input_HW_selected = mp.Queue()
-        
+
     # getter
     @property
     def isFinish(self):
@@ -37,7 +39,7 @@ class Model:
     @window_size.setter
     def window_size(self, window_size):
         self._window_size.value = window_size
-            
+        
 if __name__ == "__main__":
     mpmodel = Model()
 

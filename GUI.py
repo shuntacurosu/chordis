@@ -36,8 +36,6 @@ class GUI():
             # 初期値
             self.init_w = 500
             self.init_h = 80
-
-            # パラメータ
             self.now_window_size = 0
             bg = "snow"
             fg = "green"
@@ -47,8 +45,8 @@ class GUI():
 
             self.model = model
             self.geometry(f"{self.init_w}x{self.init_h}+{x}+{y}")
-            self.config(bg="snow")
-            self.attributes("-transparentcolor", "snow", '-alpha', alpha, "-topmost", True)
+            self.config(bg=bg)
+            self.attributes("-transparentcolor", bg, '-alpha', alpha, "-topmost", True)
             self.wm_overrideredirect(True)
 
             font = Font(family='Arial', size=self.font_size(self.init_w, self.init_h), weight='bold')
@@ -79,6 +77,20 @@ class GUI():
             if self.now_window_size != self.model.window_size:
                 self.now_window_size = self.model.window_size
                 self.resize()
+
+            # フォントカラー更新
+            try:
+                color = self.model.font_color.get_nowait()
+                self.label1.configure(foreground=color)
+            except Empty:
+                pass
+
+            # フォント不透明度更新
+            try:
+                opacity = self.model.font_opatity.get_nowait()
+                self.attributes("-alpha", opacity)
+            except Empty:
+                pass
 
             self.after(20, self.update)
 
