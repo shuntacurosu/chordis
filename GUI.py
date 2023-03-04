@@ -1,3 +1,4 @@
+import math
 from queue import Empty
 import tkinter as tk
 from tkinter import ttk
@@ -32,24 +33,25 @@ class GUI():
         def __init__(self, model:Model):
             super().__init__()
 
-            # パラメータ
+            # 初期値
+            self.init_w = 500
+            self.init_h = 80
             bg = "snow"
             fg = "green"
             alpha = 0.8
-            x = 5
+            x = 0
             y = 0
-            font_size = 45
 
             self.model = model
-            self.geometry(f"500x80+{x}+{y}")
-            self.config(bg="snow")
-            self.attributes("-transparentcolor", "snow", '-alpha', alpha, "-topmost", True)
+            self.geometry(f"{self.init_w}x{self.init_h}+{x}+{y}")
+            self.config(bg=bg)
+            self.attributes("-transparentcolor", bg, '-alpha', alpha, "-topmost", True)
             self.wm_overrideredirect(True)
 
-            font1 = Font(family='Arial', size=font_size, weight='bold')
+            font = Font(family='Arial', size=self.font_size(self.init_w, self.init_h), weight='bold')
             self.label1_str = tk.StringVar(self)
-            self.label1 = ttk.Label(self, textvariable=self.label1_str, font=font1, foreground=fg, background=bg)  #文字ラベル設定
-            self.label1.pack(side="left")
+            self.label1 = ttk.Label(self, textvariable=self.label1_str, font=font, foreground=fg, background=bg)  #文字ラベル設定
+            self.label1.grid(row=0, column=0, sticky="nsew")
 
         def mainloop(self, n: int = 0):
             try:
@@ -69,8 +71,39 @@ class GUI():
                 self.label1_str.set(chord)
             except Empty:
                 pass
+
+            # フォントサイズ更新
+            try:
+                font_scale = self.model.font_scale.get_nowait()
+                resized_w = int(self.init_w + self.init_w*font_scale)
+                resized_h = int(self.init_h + self.init_h*font_scale)
+                self.geometry(f"{resized_w}x{resized_h}")
+                self.label1.configure(font=("Arial", self.font_size(resized_w,resized_h), "bold"))
+            except Empty:
+                pass
+
+            # フォントカラー更新
+            try:
+                color = self.model.font_color.get_nowait()
+                self.label1.configure(foreground=color)
+            except Empty:
+                pass
+
+            # フォント不透明度更新
+            try:
+                opacity = self.model.font_opatity.get_nowait()
+                self.attributes("-alpha", opacity)
+            except Empty:
+                pass
+
             self.after(20, self.update)
 
+        def font_size(self, w, h):
+            """
+            フォントサイズの計算
+            """
+            return int(math.sqrt(w**2+h**2) * 0.1)
+        
 if __name__ == "__main__":
     model = Model()
     model.chord_queue.put("G#aug7(b9)/F#")

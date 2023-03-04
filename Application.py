@@ -48,7 +48,7 @@ class Application:
         """
         設定画面を開く
         """
-        self.model.isSelectConfig = 1
+        self.model.selectConfig.put(True)
         
 if __name__ == "__main__":
     Application().start()

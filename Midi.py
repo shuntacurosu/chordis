@@ -20,8 +20,8 @@ class Midi:
         self.old_chord = ""
         self.chord = ""
         
-        # MIDI入力デバイスID
-        self.midi_input_id = None
+        # MIDI入力デバイス一覧
+        self.hw_input_list = {}
 
     def start(self):
         """
@@ -33,20 +33,18 @@ class Midi:
         pygame.midi.init()
 
         # 全てのmidi入力デバイスを選択
-        midi_inputs = {}
         for i in range(pygame.midi.get_count()):
             device_info = pygame.midi.get_device_info(i)
             if device_info[2]: # is InputDevice?
-                midi_inputs[device_info[1]] = i
+                self.hw_input_list[device_info[1]] = i
         
         # 先頭の入力デバイスを初期値として設定
-        self.midi_input_id = list(midi_inputs.values())[0]
+        self.midi_input_id = list(self.hw_input_list.values())[0]
         midi_input = pygame.midi.Input(self.midi_input_id)
 
         # ConfigGUIにmidi入力デバイスリストを送信
-        self.model.midi_input_HW_list.put(midi_inputs)
-        logger.debug(f"send hw_input_list(key): { midi_inputs.keys()}")
-        logger.debug(f"send hw_input_list(val): { midi_inputs.values()}")
+        self.model.midi_input_HW_list.put(list(self.hw_input_list.keys()))
+        logger.debug(f"send hw_input_list(key): list(self.hw_input_list.keys())")
 
         # ループ内でコード判定、終了判定、MIDI機器設定変更を行う
         try:
@@ -71,16 +69,13 @@ class Midi:
         GUIで選択されたMIDI機器のIDを取得(ノンブロッキング)
         """
         try:
-            new_midi_input_id = self.model.midi_input_HW_selected.get_nowait()
-
-            # 新しいIDが選択されたら設定を更新する
-            if self.midi_input_id != new_midi_input_id:
-                pygame.midi.Input.close(midi_input)
-                pygame.midi.quit()
-                pygame.midi.init()
-                midi_input = pygame.midi.Input(new_midi_input_id)
-                self.midi_input_id = new_midi_input_id
-                logger.debug(f"set input_midi_device_id: {self.midi_input_id}")
+            midi_input_HW = self.model.midi_input_HW_selected.get_nowait()
+            midi_input_HW_id = self.hw_input_list[midi_input_HW]
+            pygame.midi.Input.close(midi_input)
+            pygame.midi.quit()
+            pygame.midi.init()
+            midi_input = pygame.midi.Input(midi_input_HW_id)
+            logger.debug(f"set input_midi_device: {midi_input_HW_id}:{midi_input_HW}")
         except Empty:
             pass
 
