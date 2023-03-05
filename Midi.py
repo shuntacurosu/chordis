@@ -5,6 +5,9 @@ from Model import Model
 from Logger import Logger
 logger = Logger(__name__, Logger.DEBUG)
 
+class MidiInitError(Exception):
+    pass
+
 class Const:
     TRIAD_NUM = 3   # トライアドの音数
     SEVENTH_NUM = 4 # セブンスの音数
@@ -28,19 +31,38 @@ class Midi:
         プロセスのエントリポイント
         """
         logger.debug("プロセスを起動しました")
-
-        # midiデバイスの初期化
-        pygame.midi.init()
-
+        try:
+            pygame.midi.init()
+            self.__start()
+        except MidiInitError as ex:
+            self.model.midi_input_HW_list.put([]) #ConfigGUIがget()でブロックされているため
+            logger.msg_error(ex)
+        except Exception as ex:    
+            logger.msg_error(ex)
+        finally: 
+            pygame.midi.quit()
+            self.model.isFinish = 1
+        
+    def __start(self):
+        """
+        実際のプロセスのエントリポイント
+        """
         # 全てのmidi入力デバイスを選択
         for i in range(pygame.midi.get_count()):
             device_info = pygame.midi.get_device_info(i)
             if device_info[2]: # is InputDevice?
                 self.hw_input_list[device_info[1]] = i
         
-        # 先頭の入力デバイスを初期値として設定
-        self.midi_input_id = list(self.hw_input_list.values())[0]
-        midi_input = pygame.midi.Input(self.midi_input_id)
+        # midi入力デバイスが存在しない場合エラー
+        if len(self.hw_input_list) == 0:
+            raise MidiInitError("MIDI入力機器が接続されていません。chordisを終了します。")
+        
+        try:
+            # 先頭の入力デバイスを初期値として設定
+            self.midi_input_id = list(self.hw_input_list.values())[0]
+            midi_input = pygame.midi.Input(self.midi_input_id)
+        except Exception as ex:
+            raise MidiInitError("使用可能なMIDIデバイスが存在しません。chordisを終了します。")
 
         # ConfigGUIにmidi入力デバイスリストを送信
         self.model.midi_input_HW_list.put(list(self.hw_input_list.keys()))
@@ -55,8 +77,6 @@ class Midi:
                 pygame.time.wait(10)
         except KeyboardInterrupt:
                 pass
-        pygame.midi.quit()
-        logger.debug("正常にプロセスを終了しました。")
         
     def stop(self):
         """
@@ -164,11 +184,15 @@ class Midi:
                 case (3, 3): new_chord = new_note+"dim"
                 case (4, 4): new_chord = new_note+"aug"
                 case (5, 2): new_chord = new_note+"sus4"
+                # シックス
+                case (4, 3, 2): new_chord = new_note+"6"
+                case (3, 4, 2): new_chord = new_note+"m6"
                 # セブンス
                 case (4, 3, 4): new_chord = new_note+"M7"
                 case (4, 3, 3): new_chord = new_note+"7"
                 case (3, 4, 3): new_chord = new_note+"m7"
                 case (3, 4, 4): new_chord = new_note+"m(M7)"
+                case (4, 2, 4): new_chord = new_note+"7b5"
                 case (3, 3, 4): new_chord = new_note+"m7b5"
                 case (4, 4, 3): new_chord = new_note+"augM7"
                 case (4, 4, 2): new_chord = new_note+"aug7"
@@ -181,8 +205,12 @@ class Midi:
                 case (2, 1, 4, 4): new_chord = new_note+"m(M9)"
                 case (2, 2, 4, 2): new_chord = new_note+"aug9"
                 case (1, 3, 4, 2): new_chord = new_note+"aug7(b9)"
+
+                # 特殊
+                case (3, 2, 2, 3): new_chord = new_note+"m7" # Ⅱm7/Ⅴ
             if new_chord != None:
                 break
+
         # 判定有の場合コードを更新。判定無の場合空文字で更新。
         if not new_chord:
             self.chord = ""
@@ -197,5 +225,5 @@ class Midi:
 if __name__ == "__main__":
     model = Model()
     midi = Midi(model)
-    model.midi_input_HW_selected.put(2)
+    model.midi_input_HW_selected.put(b"JUNO-DS")
     midi.start()
