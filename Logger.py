@@ -1,4 +1,5 @@
 import logging
+from tkinter import messagebox
 
 mapping = {
     "TRACE":    "TRACE",
@@ -50,6 +51,18 @@ class Logger:
     def alert(self, msg):
         self.logger.critical(msg)
 
+    @staticmethod
+    def msg_error(msg):
+        messagebox.showerror("Error", msg)
+
+    @staticmethod
+    def msg_warning(msg):
+        messagebox.showwarning("Warning", msg)
+
+    @staticmethod
+    def msg_info(msg):
+        messagebox.showinfo("Info", msg)
+
 if __name__ == "__main__":
     logger = Logger(__name__, logging.DEBUG)
     logger.debug("debug")
@@ -57,3 +70,6 @@ if __name__ == "__main__":
     logger.warning("warning")
     logger.error("error")
     logger.alert("alert")
+    Logger.msg_info("test1")
+    Logger.msg_warning("test2")
+    Logger.msg_error("test3")
