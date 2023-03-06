@@ -16,6 +16,21 @@ class Const:
     NOTE_OFF = 0x80 # midiステータス
     TONE_NUM = 12   # 12律
 
+octave = {
+    "C":    0,
+    "C#":   1,
+    "D":    2,
+    "D#":   3,
+    "E":    4,
+    "F":    5,
+    "F#":   6,
+    "G":    7,
+    "G#":   8,
+    "A":    9,
+    "A#":   10,
+    "B":    11,
+}
+
 class Midi:
     def __init__(self, model:Model):
         self.model = model
@@ -169,8 +184,8 @@ class Midi:
                 unique_set.add(note)
 
         # ノートからコードを探索
-        new_chord = None
         new_note = None
+        suffix = None
         octave_notes = sorted(octave_notes)
         for i in range(len(octave_notes)):
             diff = [octave_notes[j]-octave_notes[j-1] for j in range(1,len(octave_notes))]
@@ -179,48 +194,61 @@ class Midi:
 
             match diff:
                 # トライアド
-                case (4, 3): new_chord = new_note+""
-                case (3, 4): new_chord = new_note+"m"
-                case (3, 3): new_chord = new_note+"dim"
-                case (4, 4): new_chord = new_note+"aug"
-                case (5, 2): new_chord = new_note+"sus4"
-                # シックス
-                case (4, 3, 2): new_chord = new_note+"6"
-                case (3, 4, 2): new_chord = new_note+"m6"
+                case (4, 3): suffix = ""
+                case (3, 4): suffix = "m"
+                case (3, 3): suffix = "dim"
+                case (4, 4): suffix = "aug"
+                case (5, 2): suffix = "sus4"
+                # # シックス
+                # case (4, 3, 2): suffix = "6"
+                # case (3, 4, 2): suffix = "m6"
                 # セブンス
-                case (4, 3, 4): new_chord = new_note+"M7"
-                case (4, 3, 3): new_chord = new_note+"7"
-                case (3, 4, 3): new_chord = new_note+"m7"
-                case (3, 4, 4): new_chord = new_note+"m(M7)"
-                case (4, 2, 4): new_chord = new_note+"7b5"
-                case (3, 3, 4): new_chord = new_note+"m7b5"
-                case (4, 4, 3): new_chord = new_note+"augM7"
-                case (4, 4, 2): new_chord = new_note+"aug7"
-                case (3, 3, 3): new_chord = new_note+"dim7"
-                case (2, 2, 3): new_chord = new_note+"add9"
+                case (4, 3, 4): suffix = "M7"
+                case (4, 3, 3): suffix = "7"
+                case (3, 4, 3): suffix = "m7"
+                case (3, 4, 4): suffix = "m(M7)"
+                case (4, 2, 4): suffix = "7b5"
+                case (3, 3, 4): suffix = "m7b5"
+                case (4, 4, 3): suffix = "augM7"
+                case (4, 4, 2): suffix = "aug7"
+                case (3, 3, 3): suffix = "dim7"
+                case (2, 2, 3): suffix = "add9"
                 # ナインス
-                case (2, 2, 3, 4): new_chord = new_note+"M9"
-                case (2, 2, 3, 3): new_chord = new_note+"9"
-                case (2, 1, 4, 3): new_chord = new_note+"m9"
-                case (2, 1, 4, 4): new_chord = new_note+"m(M9)"
-                case (2, 2, 4, 2): new_chord = new_note+"aug9"
-                case (1, 3, 4, 2): new_chord = new_note+"aug7(b9)"
+                case (2, 2, 3, 4): suffix = "M9"
+                case (2, 2, 3, 3): suffix = "9"
+                case (2, 1, 4, 3): suffix = "m9"
+                case (2, 1, 4, 4): suffix = "m(M9)"
+                case (2, 2, 4, 2): suffix = "aug9"
+                case (1, 3, 4, 2): suffix = "aug7(b9)"
 
                 # 特殊
-                case (3, 2, 2, 3): new_chord = new_note+"m7" # Ⅱm7/Ⅴ
-            if new_chord != None:
+                case (3, 2, 2, 3): suffix = "m7" # Ⅱm7/Ⅴ
+            if suffix != None:
                 break
 
         # 判定有の場合コードを更新。判定無の場合空文字で更新。
-        if not new_chord:
+        if suffix == None:
             self.chord = ""
+            return
+
+        # ルートを取得
+        root = self.__midi_to_ansi_note(self.notes[0])
+
+        # ルートとコードの音差
+        diff = octave[new_note] - octave[root]
+
+        if (suffix == "m7") and ((diff == 9) or (diff == -3)):
+            # 6コード判定
+            self.chord = new_note+"6"
+        elif (suffix == "m7b5") and ((diff == 9) or (diff == -3)):
+            # m6コード判定
+            self.chord = new_note+"m6"
+        elif diff == 0:
+            # 基本形
+            self.chord = new_note+suffix
         else:
-            # オンコードを追記
-            root = self.__midi_to_ansi_note(self.notes[0])
-            if root == new_note:
-                self.chord = new_chord
-            else:
-                self.chord = new_chord + "/" + root
+            # 転回形
+            self.chord = new_note+suffix + "/" + root
 
 if __name__ == "__main__":
     model = Model()
