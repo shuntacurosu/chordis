@@ -9,10 +9,15 @@ class Model:
         self.selectConfig = mp.Queue()
         self.font_scale= mp.Queue()
         self.font_color= mp.Queue()
-        self.font_opatity= mp.Queue()
+        self.font_opacity= mp.Queue()
         self.chord_queue = mp.Queue()
         self.midi_input_HW_list = mp.Queue()
         self.midi_input_HW_selected = mp.Queue()
+        self.chord_queue2 = mp.Queue()
+        self.coordinate = mp.Queue()
+        self.visible = mp.Queue()
+        self.area_color = mp.Queue()
+        self.fading_speed = mp.Queue()
 
     # getter
     @property

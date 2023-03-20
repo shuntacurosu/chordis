@@ -8,7 +8,7 @@ from Model import Model
 from Logger import Logger
 logger = Logger(__name__, Logger.DEBUG)
 
-class GUI():
+class UiChord():
     """
     GUI表示用プロセス。
     実際のGUIはインナークラス__GUIで定義。
@@ -21,12 +21,12 @@ class GUI():
         プロセスのエントリポイント
         """
         logger.debug("プロセスを起動しました")
-        gui = self.__GUI(self.model)
+        gui = self.__UiChord(self.model)
         gui.after(20, gui.update)
         gui.mainloop()
         logger.debug("正常にプロセスを終了しました。")
 
-    class __GUI(tk.Tk):
+    class __UiChord(tk.Tk):
         """
         GUI本体
         """
@@ -91,7 +91,7 @@ class GUI():
 
             # フォント不透明度更新
             try:
-                opacity = self.model.font_opatity.get_nowait()
+                opacity = self.model.font_opacity.get_nowait()
                 self.attributes("-alpha", opacity)
             except Empty:
                 pass
@@ -107,5 +107,5 @@ class GUI():
 if __name__ == "__main__":
     model = Model()
     model.chord_queue.put("G#aug7(b9)/F#")
-    gui = GUI(model)
+    gui = UiChord(model)
     gui.start()

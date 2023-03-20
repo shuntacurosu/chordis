@@ -1,7 +1,8 @@
 import multiprocessing as mp
 
-from ConfigGUI import ConfigGUI
-from GUI import GUI
+from UiCircleOfFifth import UiCircleOfFifth
+from UiConfig import UiConfig
+from UiChord import UiChord
 from Midi import Midi
 from Logger import Logger
 from Model import Model
@@ -17,13 +18,15 @@ class Application:
         """
         logger.debug("プロセスを起動しました")
 
-        gui = GUI(self.model)
+        ui_chord = UiChord(self.model)
         midi = Midi(self.model)
-        config = ConfigGUI(self.model)
+        ui_config = UiConfig(self.model)
+        ui_circleOfFifth = UiCircleOfFifth(self.model)
         self.ps = [
-            mp.Process(target=gui.start),
+            mp.Process(target=ui_chord.start),
             mp.Process(target=midi.start),
-            mp.Process(target=config.start),
+            mp.Process(target=ui_config.start),
+            mp.Process(target=ui_circleOfFifth.start),
         ]
 
         try:

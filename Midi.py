@@ -117,6 +117,7 @@ class Midi:
         """
         if self.old_chord != self.chord:
             self.model.chord_queue.put(self.chord)
+            self.model.chord_queue2.put(self.chord)
             self.old_chord = self.chord
             logger.debug(f"Chord: {self.chord}")
 
@@ -194,9 +195,6 @@ class Midi:
                 case (3, 3): suffix = "dim"
                 case (4, 4): suffix = "aug"
                 case (5, 2): suffix = "sus4"
-                # # シックス
-                # case (4, 3, 2): suffix = "6"
-                # case (3, 4, 2): suffix = "m6"
                 # セブンス
                 case (4, 3, 4): suffix = "M7"
                 case (4, 3, 3): suffix = "7"
