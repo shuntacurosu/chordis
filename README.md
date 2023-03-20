@@ -2,10 +2,14 @@
 MIDIキーボードから入力された和音をディスプレイ左上に表示するアプリケーションです。
 
 ## デモ
-![demo](res/demo.gif)
+<img src="res/demo_chord.gif" width="60%">
+
+<img src="res/demo_circle_of_fifths.gif" width="60%">
+
 
 ## 機能
 - MIDIキーボードから入力された和音名を英語表記で表示します。
+- MIDIキーボードから入力された和音を5度圏上に表示します。
 
 ## インストール
 - 最新バージョンのchordis.zipを[ここ](https://github.com/shuntacurosu/chordis/releases)からダウンロードしてください。
@@ -21,15 +25,24 @@ MIDIキーボードから入力された和音をディスプレイ左上に表�
 
 ### 設定
 - タスクトレイのアイコンを右クリックし、「config」を選択します。設定画面が表示されます。
-- 設定画面では以下の項目が変更可能です。
-    | 設定値 | 説明 |
-    | ---- | ---- |
-    | MIDI Input HW | MIDI入力機器(Default:不定)
-    | Font Size | フォントの倍率(Default:1.0)
-    | Font Clolor | フォントの色(Default:green)
-    | Font Opacity | フォントの不透明度(Default:0.8)
+- 設定画面ではコードと5度圏について以下の項目が変更可能です。
+#### コード
+| 設定値 | 説明 |
+| ---- | ---- |
+| MIDI Input HW | MIDI入力機器(Default:不定)
+| Font Size | フォントの倍率(Default:1.0)
+| Font Clolor | フォントの色(Default:green)
+| Font Opacity | フォントの不透明度(Default:0.8)
 
-    ![demo](res/config.png)
+#### 5度圏
+| 設定値 | 説明 |
+| ---- | ---- |
+| Visible       | 表示・非表示
+| Coordinate X  | デスクトップに表示するX座標
+| Coordinate Y  | デスクトップに表示するY座標
+| Area Color    | 入力されたコードのセルの色
+| Fading Speed  | コードが入力されてから5度圏が透過するスピード
+
 ## 開発
 ### 開発環境
 - Python 3.10.10
