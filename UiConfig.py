@@ -156,6 +156,7 @@ class UiConfig():
 if __name__ == "__main__":
     model = Model()
     model.midi_input_HW_list.put(["test InputHW","YAMAHA XXXX"])
+    model.midi_output_HW_list.put(["", "test OutputHW", "Yamaha xxx"])
     model.selectConfig.put(True)
 
     config_gui = UiConfig(model)
