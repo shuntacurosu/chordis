@@ -19,7 +19,7 @@ class UiConfigCircleOfFifths(customtkinter.CTkFrame):
         row = 0
         visible_label = customtkinter.CTkLabel(master=self, justify=customtkinter.LEFT, text="Visible")
         visible_label.grid(row=row, column=0, padx=10, pady=20)
-        self.switch_visible = customtkinter.CTkSwitch(self, command=self.callback_visible)
+        self.switch_visible = customtkinter.CTkSwitch(self, command=self.callback_visible, text="")
         self.switch_visible.grid(row=row, column=1, padx=10, pady=20)
         self.switch_visible.select(1)
         row += 1
