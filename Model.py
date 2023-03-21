@@ -13,6 +13,8 @@ class Model:
         self.chord_queue = mp.Queue()
         self.midi_input_HW_list = mp.Queue()
         self.midi_input_HW_selected = mp.Queue()
+        self.midi_output_HW_list = mp.Queue()
+        self.midi_output_HW_selected = mp.Queue()
         self.chord_queue2 = mp.Queue()
         self.coordinate = mp.Queue()
         self.visible = mp.Queue()

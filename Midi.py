@@ -33,8 +33,13 @@ class Midi:
         self.old_chord = ""
         self.chord = ""
         
-        # MIDI入力デバイス一覧
-        self.hw_input_list = {}
+        # MIDI入出力先
+        self.midi_input = None
+        self.midi_output = None
+        self.hw_input_list = {"":-1}
+        self.hw_output_list = {"":-1}
+        self.hw_input_id = -1
+        self.hw_output_id = -1
 
     def start(self):
         """
@@ -46,6 +51,7 @@ class Midi:
             self.__start()
         except MidiInitError as ex:
             self.model.midi_input_HW_list.put([]) #ConfigGUIがget()でブロックされているため
+            self.model.midi_output_HW_list.put([]) #ConfigGUIがget()でブロックされているため
             logger.msg_error(ex)
         except Exception as ex:    
             logger.msg_error(ex)
@@ -57,33 +63,27 @@ class Midi:
         """
         実際のプロセスのエントリポイント
         """
-        # 全てのmidi入力デバイスを選択
+        # 全てのmidiデバイスを取得
         for i in range(pygame.midi.get_count()):
             device_info = pygame.midi.get_device_info(i)
-            if device_info[2]: # is InputDevice?
+            if device_info[2] ==  0: # is OutputDevice?
+                self.hw_output_list[device_info[1]] = i
+            if device_info[2] ==  1: # is InputDevice?
                 self.hw_input_list[device_info[1]] = i
         
-        # midi入力デバイスが存在しない場合エラー
-        if len(self.hw_input_list) == 0:
-            raise MidiInitError("MIDI入力機器が接続されていません。chordisを終了します。")
-        
-        try:
-            # 先頭の入力デバイスを初期値として設定
-            self.midi_input_id = list(self.hw_input_list.values())[0]
-            midi_input = pygame.midi.Input(self.midi_input_id)
-        except Exception as ex:
-            raise MidiInitError("使用可能なMIDIデバイスが存在しません。chordisを終了します。")
-
         # ConfigGUIにmidi入力デバイスリストを送信
         self.model.midi_input_HW_list.put(list(self.hw_input_list.keys()))
-        logger.debug(f"send hw_input_list(key): list(self.hw_input_list.keys())")
+        self.model.midi_output_HW_list.put(list(self.hw_output_list.keys()))
+        logger.debug(f"send hw_input_list.keys: {list(self.hw_input_list.keys())}")
+        logger.debug(f"send hw_output_list.keys: {list(self.hw_output_list.keys())}")
 
         # ループ内でコード判定、終了判定、MIDI機器設定変更を行う
         try:
             while(not self.model.isFinish):
-                midi_input = self.__updateMidiInput(midi_input)
-                self.__updateChord(midi_input)
-                self.__putChord()
+                self.__updateMidiDevice()
+                if self.midi_input:
+                    self.__updateChord()
+                    self.__putChord()
                 pygame.time.wait(10)
         except KeyboardInterrupt:
                 pass
@@ -94,23 +94,52 @@ class Midi:
         """
         self.model.isFinish = 1
 
-    def __updateMidiInput(self, midi_input):
+    def __updateMidiDevice(self):
         """
         GUIで選択されたMIDI機器のIDを取得(ノンブロッキング)
         """
+        midi_input_HW = None
+        midi_output_HW = None
+
+        # MIDI入力機器
         try:
             midi_input_HW = self.model.midi_input_HW_selected.get_nowait()
-            midi_input_HW_id = self.hw_input_list[midi_input_HW]
-            pygame.midi.Input.close(midi_input)
-            pygame.midi.quit()
-            pygame.midi.init()
-            midi_input = pygame.midi.Input(midi_input_HW_id)
-            logger.debug(f"set input_midi_device: {midi_input_HW_id}:{midi_input_HW}")
+            self.hw_input_id = self.hw_input_list[midi_input_HW]            
         except Empty:
             pass
 
-        return midi_input
+        # MIDI出力機器
+        try:
+            midi_output_HW = self.model.midi_output_HW_selected.get_nowait()
+            self.hw_output_id = self.hw_output_list[midi_output_HW]            
+        except Empty:
+            pass
+
+        if (midi_input_HW != None) or (midi_output_HW != None):
+            # クローズ処理
+            if self.midi_input:
+                pygame.midi.Input.close(self.midi_input)
+                self.midi_input = None
+            if self.midi_output:
+                pygame.midi.Output.close(self.midi_output)
+                self.midi_output = None
+            pygame.midi.quit()
+            
+            # 初期化処理
+            pygame.midi.init()
+            if self.hw_input_id > -1:
+                self.midi_input = pygame.midi.Input(self.hw_input_id)
+            if self.hw_output_id > -1:
+                self.midi_output = pygame.midi.Output(self.hw_output_id)
+                self.midi_output.set_instrument(0)
+
+            logger.debug(f"set input_midi_device: {self.hw_input_id}:{midi_input_HW}")
+            logger.debug(f"set output_midi_device: {self.hw_output_id}:{midi_output_HW}")
     
+            self.notes = []
+            self.old_chord = ""
+            self.chord = ""
+
     def __putChord(self):
         """
         コードをキューにエンキューします。
@@ -121,22 +150,23 @@ class Midi:
             self.old_chord = self.chord
             logger.debug(f"Chord: {self.chord}")
 
-    def __updateChord(self, midi_input):
+    def __updateChord(self):
         """
         キーボードから入力されたコードを返します。
         """
-        self.__update_notes(midi_input)
+        self.__update_notes()
         self.__notes_to_chord()
 
-    def __update_notes(self, midi_input):
+    def __update_notes(self):
         """
         キーボードからMIDI信号を受け取りnotesを更新します。
         """
         # キーボードからの入力値を取得
-        if midi_input.poll():
-            midi_events = midi_input.read(1)
+        if self.midi_input.poll():
+            midi_events = self.midi_input.read(1)
             status = midi_events[0][0][0]
             note = midi_events[0][0][1]
+            velocity = midi_events[0][0][2]
         else:
             return
 
@@ -144,10 +174,14 @@ class Midi:
         match status:
             case Const.NOTE_ON:
                 if note not in self.notes:
+                    if self.midi_output:
+                        self.midi_output.note_on(note, velocity)
                     self.notes.append(note)
                     self.notes = sorted(self.notes)
             case Const.NOTE_OFF:
                 if note in self.notes:
+                    if self.midi_output:
+                        self.midi_output.note_off(note)
                     self.notes.remove(note)
 
     def __midi_to_ansi_note(self, midi_note):
@@ -246,5 +280,6 @@ class Midi:
 if __name__ == "__main__":
     model = Model()
     midi = Midi(model)
-    model.midi_input_HW_selected.put(b"JUNO-DS")
+    model.midi_input_HW_selected.put(b"MPK mini 3")# (b"JUNO-DS") (b"MPK mini 3")
+    model.midi_output_HW_selected.put(b"JUNO-DS")  # (b"JUNO-DS") (b"")
     midi.start()
