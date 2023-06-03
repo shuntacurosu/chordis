@@ -43,6 +43,9 @@ class UiConfig():
             self.title("Chordis 設定")
             self.geometry(f"{600}x{400}")
 
+            # アイコン
+            self.iconbitmap("res\\favicon.ico")
+            
             # グリッドレイアウト 1x2(ナビゲーション(左)、設定(右))
             self.grid_rowconfigure(0, weight=1)
             self.grid_columnconfigure(1, weight=1)
