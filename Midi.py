@@ -240,6 +240,7 @@ class Midi:
                 case (4, 4, 2): suffix = "aug7"
                 case (3, 3, 3): suffix = "dim7"
                 case (2, 2, 3): suffix = "add9"
+                case (5, 2, 3): suffix = "7sus4"
                 # ナインス
                 case (2, 2, 3, 4): suffix = "M9"
                 case (2, 2, 3, 3): suffix = "9"
